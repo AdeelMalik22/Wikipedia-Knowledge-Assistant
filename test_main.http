@@ -1,0 +1,26 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/hello/User
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/health
+
+### Ingest a Wikipedia page summary
+
+POST http://127.0.0.1:8000/ingest/wikipedia/Python_(programming_language)
+
+### Retrieve relevant chunks
+
+POST http://127.0.0.1:8000/ask
+Content-Type: application/json
+
+{"question": "What is Python used for?", "top_k": 3}
+
+###
