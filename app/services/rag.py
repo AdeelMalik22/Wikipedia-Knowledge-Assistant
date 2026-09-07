@@ -1,16 +1,21 @@
+import base64
 import time
 from typing import Any
 from app.core.database import get_connection
 from app.services.chunking import split_into_chunks
 from app.services.embedding import embed
 
-def ingest(title: str, text: str, source_url: str | None) -> dict[str, Any]:
+def ingest(title: str, text: str, source_url: str | None, pdf_base64: str | None = None) -> dict[str, Any]:
     started = time.perf_counter(); parts = split_into_chunks(text); vectors = embed(parts)
+    pdf_data = base64.b64decode(pdf_base64) if pdf_base64 else None
     with get_connection() as connection:
+        connection.execute("""INSERT INTO wiki_documents (title, source_url, pdf_data)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (title) DO UPDATE SET source_url = EXCLUDED.source_url, pdf_data = EXCLUDED.pdf_data""", (title, source_url, pdf_data))
         connection.execute("DELETE FROM wiki_chunks WHERE title = %s", (title,))
         for index, (content, vector) in enumerate(zip(parts, vectors)):
             connection.execute("INSERT INTO wiki_chunks (title, source_url, chunk_index, content, embedding) VALUES (%s, %s, %s, %s, %s)", (title, source_url, index, content, vector))
-    return {"title": title, "chunks_created": len(parts), "embedding_dimensions": len(vectors[0]), "elapsed_ms": round((time.perf_counter() - started) * 1000, 2)}
+    return {"title": title, "chunks_created": len(parts), "embedding_dimensions": len(vectors[0]), "pdf_stored": pdf_data is not None, "elapsed_ms": round((time.perf_counter() - started) * 1000, 2)}
 
 def retrieve(question: str, top_k: int) -> dict[str, Any]:
     started = time.perf_counter(); vector = embed(question)

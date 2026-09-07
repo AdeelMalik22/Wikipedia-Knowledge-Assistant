@@ -10,7 +10,7 @@ router = APIRouter(tags=["rag"])
 
 @router.post("/ingest")
 async def ingest_document(request: IngestRequest):
-    return ingest(request.title, request.text, request.source_url)
+    return ingest(request.title, request.text, request.source_url, request.pdf_base64)
 
 @router.post("/ingest/wikipedia/{title}")
 async def ingest_wikipedia(title: str):

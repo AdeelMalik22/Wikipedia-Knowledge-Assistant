@@ -1,11 +1,16 @@
-from sentence_transformers import SentenceTransformer
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 from app.core.config import settings
 
-_model: SentenceTransformer | None = None
+_model: Any = None
 
-def get_model() -> SentenceTransformer:
+def get_model() -> Any:
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
+
         _model = SentenceTransformer(settings.embedding_model)
     return _model
 

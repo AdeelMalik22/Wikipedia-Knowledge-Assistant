@@ -5,6 +5,7 @@ class IngestRequest(BaseModel):
     title: str = Field(min_length=1)
     text: str = Field(min_length=20)
     source_url: str | None = None
+    pdf_base64: str | None = None
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=3)
